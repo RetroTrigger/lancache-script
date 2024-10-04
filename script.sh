@@ -17,7 +17,7 @@ NoColor='\033[0m'
 
 # Initial Checks to make sure the script can run
 [[ $EUID -ne 0 ]] && echo -e ""$RED"Error: Please run this script with root privileges (sudo)"$NoColor"" && exit 1
-[[ -z $(echo $osVersion | grep 'Ubuntu 20') ]] && echo -e ""$RED"Error: This script must be ran with Ubuntu 20.04"$NoColor"" && exit 1
+[[ -z $(echo $osVersion | grep 'Ubuntu') ]] && echo -e ""$RED"Error: This script must be run on Ubuntu"$NoColor"" && exit 1
 
 # Updating the system packages to make sure you have the correct versions of everything
 runSystemUpdates() {
@@ -33,13 +33,13 @@ installDocker() {
     apt install apt-transport-https ca-certificates curl software-properties-common git -y
     sleep 3 && clear && echo -e "\n\t${DARK_GRAY}Adding Docker Updated Repositories...${NoColor}" && sleep 3
     curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-    add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable"
+    add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
     apt-cache policy docker-ce
     sleep 3 && clear && echo -e "\n\t${DARK_GRAY}Installing Docker and Docker-Compose...${NoColor}" && sleep 3
     apt install docker-ce docker-compose -y
 }
 
-# The first setup of Lancache, where the user can input required infomation
+# The first setup of Lancache, where the user can input required information
 lancacheSetup() {
     sleep 3 && clear && echo -e "\n\t${DARK_GRAY}Setting up lancache...${NoColor}" && sleep 3
     cd $lancacheDIR
@@ -56,9 +56,7 @@ lancacheSetup() {
 lancacheAutoRestart() {
     cd $lancacheDIR/$lancacheDirectoryName
     cp docker-compose.yml docker-compose-old.yml
-    cat docker-compose-old.yml | 
-        sed -e '/HTTPS/,/tcp/d' -e 's/#\ \ \ \ restart\: unless-stopped/\ \ \ \ restart\: always/' | 
-        cat -s > docker-compose.yml
+    sed -e '/HTTPS/,/tcp/d' -e 's/#\ \ \ \ restart\: unless-stopped/\ \ \ \ restart\: always/' docker-compose-old.yml > docker-compose.yml
     rm docker-compose-old.yml
     echo '#!/bin/bash' > restartCachetmp.sh
     echo "cd $lancacheDIR/$lancacheDirectoryName" >> restartCachetmp.sh
