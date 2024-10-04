@@ -32,8 +32,14 @@ installDocker() {
     sleep 3 && clear && echo -e "\n\t${DARK_GRAY}Installing Key Dependencies...${NoColor}" && sleep 3
     apt install apt-transport-https ca-certificates curl software-properties-common git -y
     sleep 3 && clear && echo -e "\n\t${DARK_GRAY}Adding Docker Updated Repositories...${NoColor}" && sleep 3
-    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-    add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+
+    # Download Docker's GPG key and add it to keyrings
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo tee /usr/share/keyrings/docker-archive-keyring.gpg > /dev/null
+
+    # Add the Docker repository to the sources list with signed-by option
+    echo "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+    apt update
     apt-cache policy docker-ce
     sleep 3 && clear && echo -e "\n\t${DARK_GRAY}Installing Docker and Docker-Compose...${NoColor}" && sleep 3
     apt install docker-ce docker-compose -y
